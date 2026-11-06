@@ -1,0 +1,39 @@
+# Used only by the `dotfiles` bare-repo alias (--work-tree=$HOME).
+# status.showUntrackedFiles=no already hides everything not tracked,
+# this just guards against ever accidentally `add`ing known noise.
+.DS_Store
+*.bak
+*.bak.*
+*.bak-*
+*_history
+.viminfo
+.zcompdump*
+
+# --- Never track: secrets, credentials, private or machine-specific state ---
+.ssh/
+.gnupg/
+*.kdbx
+*.pem
+*.key
+.netrc
+.npmrc
+.env
+.env.*
+.azure/
+.kube/
+.docker/
+.claude.json*
+.config/gh/hosts.yml
+.config/twg/
+.config/configstore/
+.config/commit-audit/
+.claude/*
+!.claude/settings.json
+!.claude/hooks/
+Library/
+OneDrive*/
+# Untracked local overrides (see README)
+.zshrc.local
+.gitconfig.local
+.homebrew/Brewfile.work
+.config/dotfiles/blocklist.local

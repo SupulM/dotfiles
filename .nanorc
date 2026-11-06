@@ -1,0 +1,8 @@
+# Enable syntax highlighting
+include "/usr/share/nano/*.nanorc"
+
+# UI and Usability Tweaks
+set linenumbers
+set mouse
+set indicator
+set softwrap

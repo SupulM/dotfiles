@@ -1,0 +1,26 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
+{
+  "buffer_font_family": "JetBrainsMono Nerd Font",
+  "project_panel": {
+    "dock": "left"
+  },
+  "cli_default_open_behavior": "existing_window",
+  "restore_on_startup": "last_session",
+  "session": {
+    "restore_unsaved_buffers": true
+  },
+  "ui_font_size": 16,
+  "buffer_font_size": 13.0,
+  "theme": {
+    "mode": "system",
+    "light": "One Light",
+    "dark": "Ayu Dark",
+  },
+}

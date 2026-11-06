@@ -1,0 +1,31 @@
+set line-graphics = utf-8
+
+# Base text — keep terminal background
+color default           default default
+
+# Header bars (biggest contrast win)
+color title-blur        white   blue
+color title-focus       white   blue    bold
+
+# Selection
+color cursor            black   green   bold
+color cursor-blur       black   green
+
+# Refs in main view
+color main-head         cyan    default bold
+color main-ref          green   default
+color main-remote       yellow  default
+color main-tag          magenta default bold
+color main-local-tag    magenta default
+
+# Diff view
+color diff-add          green   default
+color diff-del          red     default
+color diff-chunk        magenta default
+color diff-header       yellow  default
+
+# Search + misc
+color search-result     black   yellow
+color line-number       cyan    default
+color status            green   default
+color id                magenta default

@@ -1,0 +1,105 @@
+tap "agavra/tap"
+tap "alexsjones/llmfit", "https://github.com/AlexsJones/homebrew-llmfit"
+tap "bjarneo/cliamp"
+tap "derailed/k9s"
+tap "teamookla/speedtest", trusted: true
+# Clone of cat(1) with syntax highlighting and Git integration
+brew "bat"
+# Yet another cross-platform graphical process/system monitor
+brew "bottom"
+# Resource monitor. C++ version and continuation of bashtop and bpytop
+brew "btop"
+# Versatile and fast Unicode/ASCII/ANSI graphics renderer
+brew "chafa"
+# Modern, maintained replacement for ls
+brew "eza"
+# Simple, fast and user-friendly alternative to find
+brew "fd"
+# Play, record, convert, and stream select audio and video codecs
+brew "ffmpeg"
+# Terminal JSON viewer
+brew "fx"
+# Command-line fuzzy finder written in Go
+brew "fzf"
+# Interact with Google Gemini AI models from the command-line
+brew "gemini-cli"
+# GitHub command-line tool
+brew "gh"
+# Interpreter for PostScript and PDF
+brew "ghostscript"
+# Distributed revision control system
+brew "git"
+# Alternative to top/htop
+brew "glances"
+# Kubernetes package manager
+brew "helm"
+# Agent multiplexer that lives in your terminal
+brew "herdr"
+# Lightweight and flexible command-line JSON processor
+brew "jq"
+# Kubernetes command-line interface
+brew "kubernetes-cli"
+# Simple terminal UI for git commands
+brew "lazygit"
+# Free (GNU) replacement for the Pico text editor
+brew "nano"
+# Development kit for the Java programming language
+brew "openjdk@21"
+# Swiss-army knife of markup format conversion
+brew "pandoc"
+# Execute binaries from Python packages in isolated environments
+brew "pipx"
+# PDF rendering library (based on the xpdf-3.0 code base)
+brew "poppler"
+# Convert bitmaps to vector graphics
+brew "potrace"
+# Theme for zsh
+brew "powerlevel10k"
+# Python version management
+brew "pyenv"
+# SVG rendering tool and library
+brew "resvg"
+# Search tool like grep and The Silver Searcher
+brew "ripgrep"
+# Powerful, clean, object-oriented scripting language
+brew "ruby"
+# 7-Zip is a file archiver with a high compression ratio
+brew "sevenzip"
+# Interactive TUI for Homebrew
+brew "taproom"
+# Text interface for Git repositories
+brew "tig"
+# Terminal multiplexer
+brew "tmux"
+# Find and verify credentials
+brew "trufflehog", link: false
+# Generator for LS_COLORS with support for multiple color themes
+brew "vivid"
+# Blazing fast terminal file manager written in Rust, based on async I/O
+brew "yazi"
+# Feature-rich command-line audio/video downloader
+brew "yt-dlp"
+# Terminal UI for Code Reviews - review AI-generated diffs like a GitHub PR
+brew "agavra/tap/tuicr", trusted: true
+# Terminal tool that right-sizes LLM models to your system hardware
+brew "alexsjones/llmfit/llmfit", trusted: true
+# A retro terminal music player inspired by Winamp 2.x
+brew "bjarneo/cliamp/cliamp", trusted: true
+# Kubernetes CLI To Manage Your Clusters In Style!
+brew "derailed/k9s/k9s", trusted: true
+# Ookla Speedtest
+brew "teamookla/speedtest/speedtest"
+# Compact TeX distribution as alternative to the full TeX Live / MacTeX
+cask "basictex"
+cask "font-meslo-lg-nerd-font"
+# Terminal emulator that uses platform-native UI and GPU acceleration
+cask "ghostty"
+# Utility to extend trackpad functionality
+cask "middleclick"
+# Control your tools with a few keystrokes
+cask "raycast"
+# System monitor for the menu bar
+cask "stats"
+# Rust-based terminal
+cask "warp"
+npm "dicebear"

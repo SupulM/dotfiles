@@ -1,0 +1,34 @@
+#!/bin/sh
+# Dotfiles pre-commit guard: blocks commits containing secrets or work-internal
+# references. Scans the *staged* content, not the working tree.
+# Bypass (only if you are sure): dotfiles commit --no-verify
+set -eu
+
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/dotfiles-precommit.XXXXXX")
+trap 'rm -rf "$tmp"' EXIT
+
+git diff --cached --name-only --diff-filter=ACMR -z \
+  | xargs -0 git checkout-index --prefix="$tmp/" --
+[ -n "$(ls -A "$tmp")" ] || exit 0
+
+# 1. Private blocklist: one extended regex per line, kept in an UNTRACKED file
+#    so the blocked terms themselves never reach the public repo.
+blocklist="$HOME/.config/dotfiles/blocklist.local"
+hits=""
+[ -s "$blocklist" ] && hits=$(grep -rIniE -f "$blocklist" "$tmp" | sed "s|^$tmp/||") || true
+if [ -n "$hits" ]; then
+  printf '%s\n' "$hits" >&2
+  echo "pre-commit: blocklisted term found (see above). Move it to a *.local file." >&2
+  exit 1
+fi
+
+# 2. Secrets, via trufflehog.
+th=$(command -v trufflehog || echo /opt/homebrew/opt/trufflehog/bin/trufflehog)
+if [ ! -x "$th" ]; then
+  echo "pre-commit: trufflehog not installed; refusing to commit (brew install trufflehog)." >&2
+  exit 1
+fi
+"$th" filesystem "$tmp" --no-update --fail --results=verified,unknown,unverified >&2 || {
+  echo "pre-commit: trufflehog flagged possible secrets (see above)." >&2
+  exit 1
+}

@@ -1,0 +1,9 @@
+[credential]
+	helper = osxkeychain
+[user]
+	name = Supul Mallikarachchi
+[alias]
+	tags = log --graph --decorate --date=relative \\\n --pretty=format:\"%C(yellow)󰜘 %h%Creset %C(cyan)%d%Creset %s %C(green)󰥔 %cr%Creset\"
+# Machine-specific identity/overrides (not tracked in dotfiles)
+[include]
+	path = ~/.gitconfig.local
