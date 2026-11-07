@@ -26,6 +26,10 @@ export FZF_DEFAULT_OPTS="--height=80% --layout=reverse --border \
 --preview '[[ -d {} ]] && eza --tree --color=always --level=2 --icons=always {} || bat --style=numbers --color=always --line-range=:500 {} 2>/dev/null || ls -la --color=always {}' \
 --preview-window 'right:50%'"
 
+# Keep fzf's file walker out of ~/Library (cloud storage mounts, app data).
+# Note: a later --walker-skip replaces this list, so repeat it when extending.
+export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --walker-skip=.git,node_modules,Library"
+
 # Don't run the file preview on Ctrl-R history search
 export FZF_CTRL_R_OPTS="--no-preview"
 
