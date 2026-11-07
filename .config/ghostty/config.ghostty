@@ -9,5 +9,5 @@ font-family = "JetBrainsMono Nerd Font"
 
 theme = Catppuccin Mocha
 
-window-width = 170
-window-height = 45
+window-width = 210
+window-height = 55
