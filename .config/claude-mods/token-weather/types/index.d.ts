@@ -1,5 +1,5 @@
 export type Forecast = {
-  /** Context tokens after each turn, oldest first; at most 13 (12 drawn, one more for the delta). */
+  /** Context tokens after each turn, oldest first; the last two, for the delta. */
   samples: number[]
   /** The model's context window, in tokens. */
   window: number

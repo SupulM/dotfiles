@@ -7,13 +7,13 @@ const forecast = atom({ plugin: 'token-weather', key: 'forecast' } as const, nul
 
 const isWorking = atom({ plugin: 'token-weather', key: 'isWorking' } as const, false)
 
-const TURNS = 12
+// The last turn and the one before it: enough for the delta.
+const KEPT = 2
 
 // Cells to leave for the footer's left side, its indent and a gap, measured
 // from "⏵⏵ auto mode on (shift+tab to cycle) · esc to interrupt · ← 1 agent".
 const LEFT_IDLE = 56
 const LEFT_WORKING = 80
-const BARS = '▁▂▃▄▅▆▇█'
 
 const CLEAR = { from: 0, icon: '☀', word: 'Clear', color: 'yellow' }
 
@@ -38,17 +38,6 @@ export const formatTokens = (n: number): string => {
   return String(Math.round(n))
 }
 
-/** One bar per turn: how full the window was after it. */
-export const chart = (samples: number[], window: number): string =>
-  samples
-    .slice(-TURNS)
-    .map(tokens => {
-      const fill = Math.min(1, Math.max(0, tokens / window))
-
-      return BARS[Math.min(BARS.length - 1, Math.floor(fill * BARS.length))]
-    })
-    .join('')
-
 function record(
   $: EngineInterface,
   tokens: number | undefined,
@@ -63,7 +52,7 @@ function record(
     if (!isSample && old === null) return null
 
     return {
-      samples: isSample ? [...samples, tokens].slice(-(TURNS + 1)) : samples,
+      samples: isSample ? [...samples, tokens].slice(-KEPT) : samples,
       window,
       usd: usd ?? old?.usd ?? null,
     }
@@ -130,7 +119,6 @@ export const register: Register = on => {
     const word = ` ${sky.word}`
     const share = `${percent}%`
     const amount = ` · ${formatTokens(tokens)} / ${formatTokens(window)}`
-    const bars = chart(samples, window)
     const delta =
       before === undefined
         ? ''
@@ -144,8 +132,7 @@ export const register: Register = on => {
       base,
       base + word.length,
       base + word.length + amount.length,
-      base + word.length + amount.length + lead(bars),
-      base + word.length + amount.length + lead(bars) + lead(delta),
+      base + word.length + amount.length + lead(delta),
     ]
 
     // The footer's left side shares this row: the permission mode and an agent
@@ -171,13 +158,7 @@ export const register: Register = on => {
           {share}
           {detail >= 2 && amount}
         </Text>
-        {detail >= 3 && (
-          <Text color={sky.color}>
-            {'  '}
-            {bars}
-          </Text>
-        )}
-        {detail >= 4 && delta !== '' && (
+        {detail >= 3 && delta !== '' && (
           <Text dimColor>
             {'  '}
             {delta}
