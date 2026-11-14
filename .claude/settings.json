@@ -22,5 +22,8 @@
   "skipDangerousModePermissionPrompt": true,
   "theme": "auto",
   "switchModelsOnFlag": false,
-  "useAutoModeDuringPlan": true
+  "useAutoModeDuringPlan": true,
+  "env": {
+    "CLAUDE_CODE_PLUGIN_DIRS": "~/.config/claude-mods/token-weather"
+  }
 }
