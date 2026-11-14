@@ -2,7 +2,7 @@
   "permissions": {
     "defaultMode": "auto"
   },
-  "model": "opus",
+  "model": "claude-fable-5-2",
   "hooks": {
     "SessionStart": [
       {
@@ -18,11 +18,22 @@
     ]
   },
   "effortLevel": "medium",
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "medium"
+    }
+  },
   "tui": "fullscreen",
+  "voice": {
+    "enabled": true,
+    "mode": "hold"
+  },
   "skipDangerousModePermissionPrompt": true,
   "theme": "auto",
+  "autoCompactEnabled": true,
   "switchModelsOnFlag": false,
   "useAutoModeDuringPlan": true,
+  "voiceEnabled": true,
   "env": {
     "CLAUDE_CODE_PLUGIN_DIRS": "~/.config/claude-mods/token-weather"
   }
