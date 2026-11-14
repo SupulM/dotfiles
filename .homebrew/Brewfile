@@ -9,6 +9,8 @@ brew "bat"
 brew "bottom"
 # Resource monitor. C++ version and continuation of bashtop and bpytop
 brew "btop"
+# Tool for building final distributable artifacts and uploading them to an archive
+brew "cargo-dist"
 # Versatile and fast Unicode/ASCII/ANSI graphics renderer
 brew "chafa"
 # Modern, maintained replacement for ls
@@ -63,6 +65,8 @@ brew "resvg"
 brew "ripgrep"
 # Powerful, clean, object-oriented scripting language
 brew "ruby"
+# Rust toolchain installer
+brew "rustup"
 # 7-Zip is a file archiver with a high compression ratio
 brew "sevenzip"
 # Interactive TUI for Homebrew

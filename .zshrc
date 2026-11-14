@@ -86,5 +86,8 @@ export PATH="$PATH:$HOME/.lmstudio/bin"
 export JAVA_HOME="/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home"
 export PATH="/opt/homebrew/opt/openjdk@21/bin:$PATH"
 
+# lazygit: read config from ~/.config (macOS default is ~/Library/Application Support)
+export LG_CONFIG_FILE="$HOME/.config/lazygit/config.yml"
+
 # Machine-specific / private settings (not tracked in dotfiles)
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
