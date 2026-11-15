@@ -14,3 +14,11 @@ type = "popup"
 command = 'lazygit -p "${HERDR_ACTIVE_PANE_CWD:-.}"'
 width = "80%"
 height = "80%"
+
+# Scratch shell as a popup, opened in the focused pane's folder.
+[[keys.command]]
+key = "prefix+alt+s"
+type = "popup"
+command = 'cd "${HERDR_ACTIVE_PANE_CWD:-$HOME}" && exec "${SHELL:-sh}"'
+width = "80%"
+height = "80%"
