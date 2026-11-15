@@ -6,3 +6,11 @@ show_agent_labels_on_pane_borders = false
 [theme]
 name = "catppuccin"
 auto_switch = false
+
+# Lazygit as a popup, opened in the focused pane's folder.
+[[keys.command]]
+key = "prefix+alt+g"
+type = "popup"
+command = 'lazygit -p "${HERDR_ACTIVE_PANE_CWD:-.}"'
+width = "80%"
+height = "80%"
