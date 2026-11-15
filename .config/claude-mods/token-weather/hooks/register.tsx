@@ -15,17 +15,14 @@ const KEPT = 2
 const LEFT_IDLE = 56
 const LEFT_WORKING = 80
 
-const CLEAR = { from: 0, icon: '☀', word: 'Clear', color: 'yellow' }
-
-const SKIES = [
-  { from: 90, icon: '↯', word: 'Compact soon', color: 'red' },
-  { from: 75, icon: '☇', word: 'Storm', color: 'magenta' },
-  { from: 50, icon: '☂', word: 'Showers', color: 'blue' },
-  { from: 25, icon: '☁', word: 'Cloudy', color: 'cyan' },
+// Red means compaction is near.
+const SIGNALS = [
+  { from: 90, color: 'red' },
+  { from: 50, color: 'yellow' },
 ]
 
-export const skyFor = (percent: number) =>
-  SKIES.find(sky => percent >= sky.from) ?? CLEAR
+export const signalFor = (percent: number): string =>
+  SIGNALS.find(signal => percent >= signal.from)?.color ?? 'green'
 
 /** 134400 -> "134.4k", 200000 -> "200k", 1000000 -> "1M" */
 export const formatTokens = (n: number): string => {
@@ -49,22 +46,49 @@ function record(
     const samples = old?.samples ?? []
     const isSample = tokens !== undefined && (isNewTurn || samples.length === 0)
 
-    if (!isSample && old === null) return null
-
     return {
       samples: isSample ? [...samples, tokens].slice(-KEPT) : samples,
       window,
+      // A forecast stored by an earlier version of this mod has neither.
+      estimate: old?.estimate ?? null,
+      baseline: old?.baseline ?? null,
       usd: usd ?? old?.usd ?? null,
     }
   })
 }
 
+// Before the first response the engine has no token count, so estimate what
+// the system prompt, tools and memory files already take. Counted locally: no
+// request is sent.
+async function estimate($: EngineInterface): Promise<void> {
+  try {
+    const { context } = await $.session.usage({ breakdown: 'summary' })
+    const total = context.breakdown?.totalTokens
+
+    if (total === undefined) return
+
+    const messages = await $.session.messages()
+    const isFresh = Array.isArray(messages) && messages.length === 0
+
+    await update($, forecast, (old: Forecast | null): Forecast | null =>
+      old === null
+        ? null
+        : { ...old, estimate: total, baseline: isFresh ? total : old.baseline },
+    )
+  } catch {
+    // No estimate: the footer shows an empty gauge instead.
+  }
+}
+
 export const register: Register = on => {
-  // Loaded mid-session: show the current sky without waiting for a turn.
+  // Show something at once: the current usage when loaded mid-session, an
+  // estimate of the starting load otherwise.
   on('session.start', async ($, e, next) => {
     const result = await next(e)
     const { context, cost } = await $.session.usage()
     await record($, context.tokens, context.window, cost?.usd, false)
+
+    if (context.tokens === undefined) await estimate($)
 
     return result
   })
@@ -83,7 +107,15 @@ export const register: Register = on => {
   })
 
   on('session.end', async ($, e, next) => {
-    if (e.reason === 'clear') await update($, forecast, () => null)
+    // No `session.start` follows a /clear, so fall back to the starting load
+    // measured when the session was new.
+    if (e.reason === 'clear') {
+      await update($, forecast, (old: Forecast | null): Forecast | null =>
+        old === null
+          ? null
+          : { ...old, samples: [], estimate: old.baseline ?? null, usd: null },
+      )
+    }
 
     return next(e)
   })
@@ -105,68 +137,86 @@ export const register: Register = on => {
   on('ui.render', { component: 'SessionMode' }, async ($, e, next) => {
     const now = await read($, forecast)
 
-    if (now === null || now.samples.length === 0) {
-      return next(e)
-    }
+    if (now === null) return next(e)
 
     const { samples, window, usd } = now
-    const tokens = samples[samples.length - 1] ?? 0
+    // No turn has reported yet: draw the estimate, or an empty gauge without one.
+    const isMeasured = samples.length > 0
+    const guess = now.estimate ?? null
+    const tokens = isMeasured ? (samples[samples.length - 1] ?? 0) : (guess ?? 0)
+    const dot = isMeasured ? '●' : '○'
+    const about = !isMeasured && guess !== null ? '~' : ''
     const percent = Math.min(100, Math.round((tokens / window) * 100))
-    const sky = skyFor(percent)
+    const signal = signalFor(percent)
     const before = samples[samples.length - 2]
 
     const modes = e.props.modes.join(' & ')
-    const word = ` ${sky.word}`
-    const share = `${percent}%`
-    const amount = ` · ${formatTokens(tokens)} / ${formatTokens(window)}`
+    // The dot and the space after it lead the percent.
+    const share = `${dot} ${about}${percent}%`
+    const amount = ` · ${about}${formatTokens(tokens)} / ${formatTokens(window)}`
     const delta =
       before === undefined
         ? ''
-        : `${tokens < before ? '▼ −' : '▲ +'}${formatTokens(Math.abs(tokens - before))} last turn`
+        : `${tokens < before ? '▼ −' : '▲ +'}${formatTokens(Math.abs(tokens - before))}`
     const cost = usd === null ? '' : `$${usd.toFixed(2)}`
 
-    // Cells each part takes, with the two spaces that lead it.
-    const lead = (text: string) => (text === '' ? 0 : text.length + 2)
-    const base = 1 + lead(share) + lead(cost) + lead(modes)
-    const sizes = [
-      base,
-      base + word.length,
-      base + word.length + amount.length,
-      base + word.length + amount.length + lead(delta),
+    // What each level of detail shows, narrowest first. As the row narrows the
+    // parts go in this order: the delta, the token amounts, the dot and
+    // percent, the cost, and last the mode labels.
+    const levels = [
+      [modes, cost],
+      [modes, share, cost],
+      [modes, share + amount, cost],
+      [modes, share + amount, delta, cost],
     ]
+
+    // Cells a level takes: its parts, with two spaces between each.
+    const width = (parts: string[]) => {
+      const shown = parts.filter(part => part !== '')
+
+      return (
+        shown.reduce((cells, part) => cells + part.length, 0) +
+        2 * Math.max(0, shown.length - 1)
+      )
+    }
 
     // The footer's left side shares this row: the permission mode and an agent
     // count when idle, plus "esc to interrupt" while a turn runs. A forecast
     // wider than what is left would wrap onto a second row, so shed detail.
     const columns = e.viewport?.columns ?? 140
     const room = columns - ((await read($, isWorking)) ? LEFT_WORKING : LEFT_IDLE)
-    const detail = sizes.findLastIndex(size => size <= room)
+    const detail = levels.findLastIndex(level => width(level) <= room)
 
-    if (detail < 0) return next(e)
+    // Nothing of ours fits beside the mode labels: the engine draws those.
+    if (detail < 0 || (detail === 0 && cost === '')) return next(e)
 
     const { Box, Text } = $.ui.resolve(e)
 
+    const hasModes = modes !== ''
+    const hasShare = detail >= 1
+    const hasDelta = detail >= 3 && delta !== ''
+    const gap = (isFollowing: boolean) => (isFollowing ? '  ' : '')
+
     return (
       <Box>
-        {modes !== '' && <Text dimColor>{modes}{'  '}</Text>}
-        <Text color={sky.color} bold>
-          {sky.icon}
-          {detail >= 1 && word}
-        </Text>
-        <Text>
-          {'  '}
-          {share}
-          {detail >= 2 && amount}
-        </Text>
-        {detail >= 3 && delta !== '' && (
+        {hasModes && <Text dimColor>{modes}</Text>}
+        {hasShare && (
+          <Text>
+            {gap(hasModes)}
+            <Text color={signal}>{dot}</Text>
+            {` ${about}${percent}%`}
+            {detail >= 2 && amount}
+          </Text>
+        )}
+        {hasDelta && (
           <Text dimColor>
             {'  '}
             {delta}
           </Text>
         )}
         {cost !== '' && (
-          <Text color="green">
-            {'  '}
+          <Text dimColor>
+            {gap(hasModes || hasShare)}
             {cost}
           </Text>
         )}
