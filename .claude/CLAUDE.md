@@ -16,6 +16,10 @@ published **publicly** at https://github.com/SupulM/dotfiles.
 - A pre-commit hook (`~/.config/dotfiles/hooks/pre-commit`, via `core.hooksPath`) runs
   trufflehog plus a private regex blocklist at `~/.config/dotfiles/blocklist.local`.
   Never copy blocklist terms into tracked files, and never use `--no-verify` without asking.
+- Keep `~/.github/README.md` current in the same commit as the change. The pre-commit hook
+  blocks a newly added file that the "What's here" table doesn't cover; it can't see stale
+  prose, so also update the README when a commit adds a tool, changes the install steps,
+  or changes the `*.local` conventions.
 - `~/.gitignore` blocks `.claude/*` (except the files explicitly un-ignored there) and `Library/`.
   To track something there, add a `!path` line; for app configs prefer a `~/.config/` location.
 - Commits use my GitHub noreply email (set in the repo-local config). If `dotfiles push`

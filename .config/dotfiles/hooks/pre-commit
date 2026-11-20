@@ -1,6 +1,7 @@
 #!/bin/sh
 # Dotfiles pre-commit guard: blocks commits containing secrets or work-internal
-# references. Scans the *staged* content, not the working tree.
+# references, and commits that add a file the README doesn't list.
+# Scans the *staged* content, not the working tree.
 # Bypass (only if you are sure): dotfiles commit --no-verify
 set -eu
 
@@ -32,3 +33,39 @@ fi
   echo "pre-commit: trufflehog flagged possible secrets (see above)." >&2
   exit 1
 }
+
+# 3. README coverage: every newly added file must be listed in the README's
+#    "What's here" table, by exact path or under a listed directory (`dir/`).
+#    Reads the *staged* README, so adding the row in the same commit passes.
+readme=.github/README.md
+listed=$(git show ":$readme" 2>/dev/null | awk -F'|' '/^\|/ { print $2 }' \
+  | grep -o '`[^`]*`' | tr -d '`' || true)
+
+is_listed() {
+  # The braces run in the pipeline's subshell, so `exit` only sets is_listed's status.
+  printf '%s\n' "$listed" | {
+    while IFS= read -r p; do
+      case "$p" in
+        "") ;;
+        */) case "$1" in "$p"*) exit 0 ;; esac ;;
+        *) if [ "$1" = "$p" ]; then exit 0; fi ;;
+      esac
+    done
+    exit 1
+  }
+}
+
+unlisted() {
+  git diff --cached --name-only --diff-filter=A | while IFS= read -r f; do
+    if [ "$f" = "$readme" ]; then continue; fi
+    if ! is_listed "$f"; then printf '  %s\n' "$f"; fi
+  done
+}
+
+missing=$(unlisted)
+if [ -n "$missing" ]; then
+  echo "pre-commit: new file(s) not listed in $readme:" >&2
+  printf '%s\n' "$missing" >&2
+  echo "Add a row to the \"What's here\" table and stage it with this commit." >&2
+  exit 1
+fi

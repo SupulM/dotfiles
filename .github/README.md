@@ -17,11 +17,15 @@ so there are no symlinks and no install scripts. Files live where the tools expe
 | `.config/yazi/` | yazi file manager (keymap, theme, plugins) |
 | `.config/zed/settings.json` | Zed editor |
 | `.config/btop/`, `.config/herdr/`, `.config/ccstatusline/`, `.config/gh/config.yml` | Misc tool configs |
+| `.config/lazygit/config.yml`, `.config/posting/config.yaml` | lazygit and posting, both Catppuccin Mocha |
 | `.warp/settings.toml` | Warp terminal |
 | `.claude/settings.json`, `.claude/hooks/` | Claude Code settings |
-| `.gitconfig`, `.tigrc`, `.nanorc` | git, tig, nano |
+| `.claude/CLAUDE.md` | Global Claude Code instructions (how to work with this repo) |
+| `.config/claude-mods/token-weather/` | Claude Code mod: a context-window forecast in the footer line |
+| `.gitconfig`, `.config/git/ignore`, `.tigrc`, `.nanorc` | git (config and global ignore), tig, nano |
 | `.homebrew/Brewfile` | Everything installed via Homebrew |
-| `.config/dotfiles/hooks/pre-commit` | Secret-scan guard for this repo |
+| `.gitignore` | Ignore rules for this repo only: secrets and machine state that must never be tracked |
+| `.config/dotfiles/hooks/pre-commit` | Guard for this repo: secret scan, plus a check that this table covers every new file |
 
 ## Install on a new Mac
 
@@ -64,7 +68,9 @@ dotfiles push
 ```
 
 The pre-commit hook runs `trufflehog` and the local blocklist against staged
-content and blocks the commit if anything is found.
+content and blocks the commit if anything is found. It also blocks a commit that
+adds a file the "What's here" table doesn't cover (by exact path or a listed
+directory), so add the row in the same commit.
 
 > `brew bundle dump --global --force` regenerates the Brewfile from *everything*
 > installed, including machine-specific packages. Review the diff before committing.
