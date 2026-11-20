@@ -80,15 +80,28 @@ async function estimate($: EngineInterface): Promise<void> {
   }
 }
 
+async function seed($: EngineInterface): Promise<void> {
+  const { context, cost } = await $.session.usage()
+  await record($, context.tokens, context.window, cost?.usd, false)
+
+  if (context.tokens === undefined) await estimate($)
+}
+
 export const register: Register = on => {
   // Show something at once: the current usage when loaded mid-session, an
   // estimate of the starting load otherwise.
   on('session.start', async ($, e, next) => {
     const result = await next(e)
-    const { context, cost } = await $.session.usage()
-    await record($, context.tokens, context.window, cost?.usd, false)
+    await seed($)
 
-    if (context.tokens === undefined) await estimate($)
+    return result
+  })
+
+  // A /clear raises no `session.start`, and the new session it starts has an
+  // empty `$.state`, so seed the forecast again once the command has run.
+  on('command.run', { command: 'clear' }, async ($, e, next) => {
+    const result = await next(e)
+    await seed($)
 
     return result
   })
@@ -102,20 +115,6 @@ export const register: Register = on => {
       e.cost?.usd,
       e.changed.includes('context'),
     )
-
-    return next(e)
-  })
-
-  on('session.end', async ($, e, next) => {
-    // No `session.start` follows a /clear, so fall back to the starting load
-    // measured when the session was new.
-    if (e.reason === 'clear') {
-      await update($, forecast, (old: Forecast | null): Forecast | null =>
-        old === null
-          ? null
-          : { ...old, samples: [], estimate: old.baseline ?? null, usd: null },
-      )
-    }
 
     return next(e)
   })
